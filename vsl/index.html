@@ -37,7 +37,6 @@ src="https://www.facebook.com/tr?id=912832049984658&ev=PageView&noscript=1"
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" href="https://scripts.converteai.net/5c44636d-2807-4c36-8d21-6fb4390eaef0/players/6abd88622680d88ef7f9cd52/v4/player.js" as="script">
 <link rel="preload" href="https://scripts.converteai.net/lib/js/smartplayer-wc/v4/smartplayer.js" as="script">
 <link rel="dns-prefetch" href="https://cdn.converteai.net">
 <link rel="dns-prefetch" href="https://scripts.converteai.net">
@@ -124,58 +123,101 @@ body{
   50%{ opacity:.35; transform:scale(.8); }
 }
 
-/* ---------- Vagas (aparece no início do pitch) ---------- */
-.vagas{
-  margin-top:14px;
-  padding:14px 16px;
-  border:1px solid var(--linha);
-  border-radius:var(--raio);
+/* ---------- Vagas restantes (cartão grande sobre o vídeo) ---------- */
+.vg{
+  position:absolute;
+  left:50%;
+  bottom:140px;                 /* o JS recalcula para centralizar no vídeo, acima da área do botão */
+  width:calc(100% - 32px);
+  max-width:340px;
+  z-index:999;
+  padding:16px 18px 18px;
+  border-radius:22px;
+  background:rgba(3,7,18,.84);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 14px 44px rgba(0,0,0,.5);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+  text-align:center;
+  color:#FFFFFF;
+  pointer-events:none;          /* o clique passa direto para o player */
   opacity:0;
-  transform:translateY(6px);
+  transform:translateX(-50%) scale(.94);
   transition:opacity .5s ease, transform .5s ease;
 }
-.vagas[hidden]{ display:none; }
-.vagas.visivel{ opacity:1; transform:none; }
+.vg[hidden]{ display:none; }
+.vg.visivel{ opacity:1; transform:translateX(-50%) scale(1); }
 
-.vagas-topo{
+.vg-topo{
   display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:12px;
-  font-size:20px;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  font-size:13px;
   font-weight:700;
-  color:#000000;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.88);
 }
-.vagas-numero{
-  font-size:36px;
+.vg-ponto{
+  width:9px; height:9px;
+  border-radius:50%;
+  background:#EF4444;
+  box-shadow:0 0 0 0 rgba(239,68,68,.7);
+  animation:vg-pulsa 1.6s ease-out infinite;
+}
+@keyframes vg-pulsa{
+  0%{ box-shadow:0 0 0 0 rgba(239,68,68,.7); }
+  100%{ box-shadow:0 0 0 10px rgba(239,68,68,0); }
+}
+
+.vg-numero{
+  margin:6px 0 2px;
+  font-size:96px;
   font-weight:800;
   line-height:1;
-  color:var(--titulo);
+  letter-spacing:-.02em;
+  color:#FFFFFF;
   font-variant-numeric:tabular-nums;
-  transition:color .3s ease;
+  transition:color .3s ease, text-shadow .3s ease;
 }
-.vagas-numero.baixo{ color:var(--alerta); }
-.vagas-numero.bump{ animation:bump .35s ease; }
+.vg-numero.baixo{
+  color:#F87171;
+  text-shadow:0 0 24px rgba(239,68,68,.55);
+}
+.vg-numero.bump{ animation:bump .4s ease; }
 @keyframes bump{
   0%{ transform:scale(1); }
-  40%{ transform:scale(1.15); }
+  40%{ transform:scale(1.12); }
   100%{ transform:scale(1); }
 }
 
-.vagas-barra{
-  margin-top:10px;
-  height:6px;
+.vg-sub{
+  font-size:14px;
+  color:rgba(255,255,255,.7);
+}
+.vg-sub b{ color:#FFFFFF; font-weight:700; }
+
+.vg-barra{
+  margin:14px 0 12px;
+  height:10px;
   border-radius:999px;
-  background:var(--linha);
+  background:rgba(255,255,255,.16);
   overflow:hidden;
 }
-.vagas-barra i{
+.vg-barra i{
   display:block;
   height:100%;
   width:100%;
   border-radius:999px;
-  background:var(--alerta);
+  background:linear-gradient(90deg,#16A34A,#4ADE80);
   transition:width .6s ease;
+}
+
+.vg-rodape{
+  font-size:13px;
+  line-height:1.35;
+  color:rgba(255,255,255,.82);
 }
 
 /* ---------- Pop-up de backredirect ---------- */
@@ -303,8 +345,9 @@ body{
 
 @media (prefers-reduced-motion: reduce){
   .ao-vivo-ponto,
-  .vagas-numero.bump{ animation:none; }
-  .vagas{ transition:none; }
+  .vg-ponto,
+  .vg-numero.bump{ animation:none; }
+  .vg{ transition:opacity .2s ease; transform:translateX(-50%); }
   .notificacao{ transition:opacity .2s ease; transform:none; }
 }
 </style>
@@ -314,7 +357,7 @@ body{
 <main class="vsl-wrap">
 
   <div class="vsl-player">
-    <vturb-smartplayer id="vid-6abd88622680d88ef7f9cd52" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"><div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 177.77777777777777% 0 0; z-index: 0; background-color: black;"></div></vturb-smartplayer>
+    <vturb-smartplayer id="vid-6ac1bcd0965fbdd354920fdc" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"><div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 177.77777777777777% 0 0; z-index: 0; background-color: black;"></div></vturb-smartplayer>
 
     <div class="ao-vivo" aria-live="off">
       <span class="ao-vivo-ponto" aria-hidden="true"></span>
@@ -330,14 +373,14 @@ body{
         <div class="notificacao-texto"><strong id="notifNome">Rafaela</strong> acabou de garantir a Vitrine do Dinheiro</div>
       </div>
     </div>
-  </div>
 
-  <div class="vagas" id="vagas" hidden>
-    <div class="vagas-topo">
-      <span>Vagas restantes</span>
-      <span class="vagas-numero" id="vagasNumero">49</span>
+    <div class="vg" id="vg" hidden aria-live="off">
+      <div class="vg-topo"><span class="vg-ponto" aria-hidden="true"></span><span id="vgRotulo">Vagas restantes</span></div>
+      <div class="vg-numero" id="vgNumero">49</div>
+      <div class="vg-sub">de <b>49</b> vagas</div>
+      <div class="vg-barra"><i id="vgBarra"></i></div>
+      <div class="vg-rodape" id="vgRodape">As vagas estão sendo preenchidas agora</div>
     </div>
-    <div class="vagas-barra"><i id="vagasBarra"></i></div>
   </div>
 
 </main>
@@ -353,9 +396,14 @@ body{
 
 <script>
 
+// O id do player é lido do elemento <vturb-smartplayer> da página:
+// para trocar o vídeo, basta substituir esse elemento pelo novo embed do vturb.
+const PLAYER_EL = document.querySelector('vturb-smartplayer');
+const PLAYER_ID = PLAYER_EL ? PLAYER_EL.id.replace('vid-', '') : '';
+
 const CONFIG = {
   checkoutUrl: 'https://app.ephra.io/checkout/5do1xf2',
-  vslPlayerUrl: 'https://scripts.converteai.net/5c44636d-2807-4c36-8d21-6fb4390eaef0/players/6abd88622680d88ef7f9cd52/v4/player.js'
+  vslPlayerUrl: 'https://scripts.converteai.net/5c44636d-2807-4c36-8d21-6fb4390eaef0/players/' + PLAYER_ID + '/v4/player.js'
 };
 
 const s = document.createElement('script');
@@ -394,15 +442,19 @@ window.irParaCheckout = irParaCheckout;
  *
  * AJUSTE ESTES VALORES (em segundos):
  *   duracaoVideo  -> duração total do vídeo
- *   pitchInicio   -> segundo em que o pitch começa
- *   pitchFim      -> segundo em que as vagas devem chegar a 04
+ *   pitchInicio   -> segundo em que o pitch começa (notificações, backredirect)
+ *   vagasAparece  -> segundo em que o cartão de vagas aparece sobre o vídeo
+ *   vagasTermina  -> segundo em que as vagas devem chegar a 04
  *                    (use null para ir até o fim do vídeo)
  * ============================================================ */
 const CONTADORES = {
   debug: false,                 // true = mostra logs no console para testar
-  duracaoVideo: 950,            // duração do vídeo: 15:50 (15*60 + 50)
+  duracaoVideo: 1015,           // duração do vídeo: 16:55 (16*60 + 55)
   pitchInicio: 864,             // pitch começa em 14:24 (14*60 + 24)
-  pitchFim: null,               // null = vagas chegam a 04 no fim do vídeo
+
+  // Cartão de vagas sobre o vídeo
+  vagasAparece: 950,            // aparece em 15:50 (15*60 + 50)
+  vagasTermina: null,           // null = chega a 04 no fim do vídeo (16:55)
 
   proporcaoVideo: 16 / 9,       // altura / largura do vídeo (9:16 vertical = 16/9)
   topoVideoManual: 0,           // plano B: altura (px) do título acima do vídeo, só usada se o código não achar o <video>
@@ -440,13 +492,14 @@ const CONTADORES = {
   const C = CONTADORES;
   const log = (...a) => { if (C.debug) console.log('[contadores]', ...a); };
 
-  const elPlayer   = document.getElementById('vid-6abd88622680d88ef7f9cd52');
+  const elPlayer   = document.querySelector('vturb-smartplayer');
   const elAoVivo   = document.getElementById('aoVivoNumero');
-  const elVagas    = document.getElementById('vagas');
-  const elVagasNum = document.getElementById('vagasNumero');
-  const elVagasBar = document.getElementById('vagasBarra');
+  const elVg        = document.getElementById('vg');
+  const elVgNumero  = document.getElementById('vgNumero');
+  const elVgBarra   = document.getElementById('vgBarra');
+  const elVgRotulo  = document.getElementById('vgRotulo');
+  const elVgRodape  = document.getElementById('vgRodape');
 
-  const pitchFim = C.pitchFim || C.duracaoVideo;
   const rand = (min, max) => min + Math.random() * (max - min);
   const pad2 = n => String(n).padStart(2, '0');
 
@@ -580,23 +633,25 @@ const CONTADORES = {
 
   const passos = sortearPassos(C.vagasInicio - C.vagasFim);
 
-  // Distribui as quedas ao longo do pitch, com tempos irregulares
-  const janela = (pitchFim - C.pitchInicio) * 0.96;
+  // Distribui as quedas entre o momento em que o cartão aparece e o fim da janela, com tempos irregulares
+  const vagasFimJanela = C.vagasTermina || C.duracaoVideo;
+  const janela = (vagasFimJanela - C.vagasAparece) * 0.96;
   const momentos = passos
-    .map((_, i) => C.pitchInicio + ((i + 0.5 + rand(-0.35, 0.35)) / passos.length) * janela)
+    .map((_, i) => C.vagasAparece + ((i + 0.5 + rand(-0.35, 0.35)) / passos.length) * janela)
     .sort((a, b) => a - b);
 
-  let vagasMostrando = false;
+  let cartaoMostrando = false;
   let vagasAtual = null;
 
   function renderVagas(){
-    if (tempo < C.pitchInicio) return;
+    if (tempo < C.vagasAparece) return;
 
-    if (!vagasMostrando){
-      vagasMostrando = true;
-      elVagas.hidden = false;
-      requestAnimationFrame(() => requestAnimationFrame(() => elVagas.classList.add('visivel')));
-      log('pitch começou, mostrando vagas');
+    if (!cartaoMostrando){
+      cartaoMostrando = true;
+      elVg.hidden = false;
+      posicionarVagasGrande();
+      requestAnimationFrame(() => requestAnimationFrame(() => elVg.classList.add('visivel')));
+      log('mostrando o cartão de vagas');
     }
 
     let vagas = C.vagasInicio;
@@ -608,16 +663,34 @@ const CONTADORES = {
     if (vagas !== vagasAtual){
       const primeira = vagasAtual === null;
       vagasAtual = vagas;
-      elVagasNum.textContent = pad2(vagas);
-      elVagasNum.classList.toggle('baixo', vagas <= 10);
-      elVagasBar.style.width = Math.max(4, (vagas / C.vagasInicio) * 100) + '%';
+      const baixo = vagas <= 10;
+
+      elVgNumero.textContent = pad2(vagas);
+      elVgNumero.classList.toggle('baixo', baixo);
+      elVgBarra.style.width = Math.max(4, (vagas / C.vagasInicio) * 100) + '%';
+      elVgRotulo.textContent = baixo ? 'Últimas vagas' : 'Vagas restantes';
+      elVgRodape.textContent = baixo ? 'Está acabando! Garanta a sua antes que feche' : 'As vagas estão sendo preenchidas agora';
 
       if (!primeira){
-        elVagasNum.classList.remove('bump');
-        void elVagasNum.offsetWidth;
-        elVagasNum.classList.add('bump');
+        elVgNumero.classList.remove('bump');
+        void elVgNumero.offsetWidth;
+        elVgNumero.classList.add('bump');
       }
     }
+  }
+
+  // Centraliza o cartão no VÍDEO. Como o botão do vturb aparece embaixo do vídeo
+  // (a partir de aoVivoSobe.em) e faz o player crescer, a posição é medida a partir
+  // do fundo do player somando essa área extra.
+  function posicionarVagasGrande(){
+    if (elVg.hidden) return;
+    const larguraVideo = elPlayer.getBoundingClientRect().width;
+    if (!larguraVideo) return;
+    const alturaVideo   = larguraVideo * C.proporcaoVideo;
+    const areaDoBotao   = tempo >= C.aoVivoSobe.em ? C.aoVivoSobe.px : 0;
+    const alturaCard    = elVg.offsetHeight;
+    const bottom = areaDoBotao + (alturaVideo - alturaCard) / 2;
+    elVg.style.bottom = Math.max(areaDoBotao + 48, bottom) + 'px';
   }
 
   /* ---------- posição dos elementos sobre o VÍDEO ---------- */
@@ -678,6 +751,7 @@ const CONTADORES = {
     }
 
     elNotifBox.style.top  = Math.max(0, topoVideo + MARGEM_TOPO) + 'px';
+    posicionarVagasGrande();
   }
 
   posicionarSobreVideo();
@@ -759,6 +833,8 @@ const CONTADORES = {
   }
 
   elPlayer.addEventListener('player:ready', conectar);
+
+  renderVagas();   // se vagasAparece for 0, o elemento já aparece ao carregar a página
 
   let tentativas = 0;
   const poll = setInterval(() => {
