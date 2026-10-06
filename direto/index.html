@@ -178,76 +178,6 @@ body{
   transition:width .6s ease;
 }
 
-/* ---------- Pop-up de backredirect ---------- */
-.br-overlay{
-  position:fixed;
-  inset:0;
-  z-index:2147483000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:16px;
-  background:rgba(3,7,18,.65);
-  -webkit-backdrop-filter:blur(3px);
-  backdrop-filter:blur(3px);
-}
-.br-overlay[hidden]{ display:none; }
-
-.br-card{
-  width:100%;
-  max-width:360px;
-  padding:26px 22px 20px;
-  border-radius:var(--raio);
-  background:#FFFFFF;
-  text-align:center;
-  box-shadow:0 20px 50px rgba(0,0,0,.4);
-  animation:br-entra .3s ease;
-}
-@keyframes br-entra{
-  from{ opacity:0; transform:translateY(12px) scale(.97); }
-  to{ opacity:1; transform:none; }
-}
-.br-titulo{
-  margin:0 0 10px;
-  font-size:22px;
-  line-height:1.2;
-  font-weight:800;
-  color:var(--titulo);
-}
-.br-texto{
-  margin:0 0 18px;
-  font-size:16px;
-  line-height:1.45;
-  color:var(--titulo);
-}
-.br-texto strong{ color:var(--alerta); }
-.br-botao{
-  display:block;
-  width:100%;
-  padding:15px 16px;
-  border:0;
-  border-radius:12px;
-  background:#16A34A;
-  color:#FFFFFF;
-  font:inherit;
-  font-size:17px;
-  font-weight:700;
-  cursor:pointer;
-}
-.br-botao:focus-visible,
-.br-fechar:focus-visible{ outline:3px solid #030712; outline-offset:2px; }
-.br-fechar{
-  margin-top:12px;
-  padding:8px;
-  border:0;
-  background:none;
-  font:inherit;
-  font-size:14px;
-  color:var(--suave);
-  text-decoration:underline;
-  cursor:pointer;
-}
-
 /* ---------- Notificação de compra (topo do player) ---------- */
 .notificacao{
   position:absolute;
@@ -342,15 +272,6 @@ body{
 
 </main>
 
-<div class="br-overlay" id="brOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="brTitulo">
-  <div class="br-card">
-    <h2 class="br-titulo" id="brTitulo">Espera! Antes de sair...</h2>
-    <p class="br-texto">Liberei <strong>R$ 100 de desconto</strong> na sua vaga. Clique no botão abaixo e garanta a Vitrine do Dinheiro com o valor reduzido.</p>
-    <button class="br-botao" id="brBotao" type="button">Quero meus R$ 100 de desconto</button>
-    <button class="br-fechar" id="brFechar" type="button">Não, obrigado</button>
-  </div>
-</div>
-
 <script>
 
 const CONFIG = {
@@ -431,8 +352,8 @@ const CONTADORES = {
 
   backredirect: {
     ativo: true,
-    inicio: null,           // segundo do vídeo a partir do qual vale (null = início do pitch, 14:24). Para testar, use 0
-    urlDesconto: 'https://pay.hub.la/5C8PjYZu12WJtPH2g7pQ'   // checkout com os R$ 100 de desconto
+    inicio: 0,              // segundo do vídeo a partir do qual vale (0 = desde o início do vídeo; null = só a partir do pitch)
+    destino: '/back/'       // página para onde o botão "voltar" manda a pessoa
   }
 };
 
@@ -685,16 +606,15 @@ const CONTADORES = {
   window.addEventListener('load', posicionarSobreVideo);
   setInterval(posicionarSobreVideo, 500);   // acompanha o título/botão do vturb aparecendo e mudando de tamanho
 
-  /* ---------- backredirect (botão voltar, só a partir do pitch) ---------- */
+  /* ---------- backredirect (botão voltar -> /back/) ---------- */
   const BR = C.backredirect;
-  const elBrOverlay = document.getElementById('brOverlay');
-  const elBrBotao   = document.getElementById('brBotao');
-  const elBrFechar  = document.getElementById('brFechar');
   let brArmado = false;
-  let brMostrado = false;
   let interagiu = false;
 
   function brInicio(){ return BR.inicio === null ? C.pitchInicio : BR.inicio; }
+
+  // Leva a query string inteira (utm_*, fbclid, gclid, sck, vk_*...) para a /back/ repassar ao checkout
+  function urlBack(){ return BR.destino + window.location.search; }
 
   // O Chrome ignora entradas de histórico criadas sem interação do usuário,
   // então só "armamos" depois de um toque/clique/tecla na página.
@@ -709,32 +629,13 @@ const CONTADORES = {
     window.addEventListener(ev, () => { interagiu = true; armarBackredirect(); }, { passive: true });
   });
 
-  function abrirPopupBack(){
-    elBrOverlay.hidden = false;
-    document.body.style.overflow = 'hidden';
-    elBrBotao.focus();
-    try { if (window.fbq) fbq('trackCustom', 'BackRedirectPopup'); } catch(e){}
-    log('pop-up de backredirect aberto');
-  }
-
-  function fecharPopupBack(){
-    elBrOverlay.hidden = true;
-    document.body.style.overflow = '';
-  }
-
   window.addEventListener('popstate', () => {
-    if (brArmado && !brMostrado){
-      brMostrado = true;       // só aparece uma vez; no próximo "voltar" a pessoa sai normalmente
-      abrirPopupBack();
-    }
+    if (!brArmado) return;
+    brArmado = false;
+    try { if (window.fbq) fbq('trackCustom', 'BackRedirect'); } catch(e){}
+    log('backredirect -> ' + urlBack());
+    window.location.replace(urlBack());   // replace: o "voltar" da /back/ não cai de novo nesta página
   });
-
-  elBrBotao.addEventListener('click', () => {
-    try { if (window.fbq) fbq('trackCustom', 'BackRedirectClick'); } catch(e){}
-    window.location.href = montarUrlCheckout(BR.urlDesconto || null);
-  });
-  elBrFechar.addEventListener('click', fecharPopupBack);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !elBrOverlay.hidden) fecharPopupBack(); });
 
   /* ---------- conexão com o player do vturb ---------- */
   let conectado = false;
